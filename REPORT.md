@@ -40,3 +40,45 @@ curl -fsS http://127.0.0.1:8080/
 {"greeting": "Hello, Docker!", "count": 3, "hostname": "1a638265d04f", "storage": "sqlite"}
 ```
 Счётчик остался 3 после пересоздания контейнера (hostname другой): данные сохранились в volume.
+
+
+Уровень 8:
+```bash
+docker compose up -d --build --wait
+docker compose ps
+curl -fsS -X POST http://127.0.0.1:8080/increment #три раза
+docker compose down
+docker compose up -d --wait
+curl -fsS http://127.0.0.1:8080/
+```
+Вывод:
+```
+homework3-docker-app-1     Up 22 seconds (healthy)   0.0.0.0:8080->8000/tcp
+homework3-docker-redis-1   Up 28 seconds (healthy)   6379/tcp
+{"greeting": "Hello, Docker!", "count": 1, "hostname": "ec4081d6bd76", "storage": "redis"}
+{"greeting": "Hello, Docker!", "count": 2, "hostname": "ec4081d6bd76", "storage": "redis"}
+{"greeting": "Hello, Docker!", "count": 3, "hostname": "ec4081d6bd76", "storage": "redis"}
+
+после down и up -d:
+{"greeting": "Hello, Docker!", "count": 3, "hostname": "83e80976cf0c", "storage": "redis"}
+```
+Счётчик остался 3 после пересоздания контейнеров (hostname другой), данные в Redis.
+
+Остановка и запуск Redis:
+```bash
+docker compose stop redis
+curl -s -o /dev/null -w "healthz %{http_code}\n" http://127.0.0.1:8080/healthz
+curl -s -o /dev/null -w "readyz %{http_code}\n" http://127.0.0.1:8080/readyz
+curl -s -o /dev/null -w "increment %{http_code}\n" -X POST http://127.0.0.1:8080/increment
+docker compose start redis
+curl -fsS http://127.0.0.1:8080/
+curl -fsS -X POST http://127.0.0.1:8080/increment
+```
+Вывод:
+```
+healthz 200
+readyz 503
+increment 503
+{"greeting": "Hello, Docker!", "count": 3, "hostname": "83e80976cf0c", "storage": "redis"}
+{"greeting": "Hello, Docker!", "count": 4, "hostname": "83e80976cf0c", "storage": "redis"}
+```
