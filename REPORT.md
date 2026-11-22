@@ -22,3 +22,21 @@ curl -fsS -X POST http://127.0.0.1:8080/increment
 2026-11-22 15:15:44,753 http 192.168.65.1 "GET /readyz HTTP/1.1" 200 -
 2026-11-22 15:15:50,542 http 192.168.65.1 "POST /increment HTTP/1.1" 200 -
 ```
+
+
+Уровень 6:
+```bash
+docker compose up -d --build
+curl -fsS -X POST http://127.0.0.1:8080/increment
+curl -fsS -X POST http://127.0.0.1:8080/increment
+curl -fsS -X POST http://127.0.0.1:8080/increment
+docker compose down
+docker compose up -d
+curl -fsS http://127.0.0.1:8080/
+```
+Вывод:
+```
+{"greeting": "Hello, Docker!", "count": 3, "hostname": "56df293edac3", "storage": "sqlite"}
+{"greeting": "Hello, Docker!", "count": 3, "hostname": "1a638265d04f", "storage": "sqlite"}
+```
+Счётчик остался 3 после пересоздания контейнера (hostname другой): данные сохранились в volume.

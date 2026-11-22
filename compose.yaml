@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${HOST_PORT:-8080}:${PORT:-8000}"
+    env_file:
+      - .env
+    environment:
+      STORAGE: sqlite
+    volumes:
+      - counter-data:/data
+volumes:
+  counter-data:
